@@ -1,0 +1,192 @@
+package com.workpro.service;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+import com.workpro.dao.GenericDao;
+//import com.workpro.domain.Pages;
+import com.workpro.utils.ConnectionManager;
+
+/**
+ * 数据库查询的服务层逻辑
+ * 
+ * @author lizhao
+ * @version 1.0.0
+ */
+public class GenericService {
+	private GenericDao dao = new GenericDao();
+	{
+		ConnectionManager.getConnection();
+		ConnectionManager.start();
+	}
+
+	/**
+	 * 查询数据库中所有元素,传入要封装的JavaBean的Class对象,返回数据库中的全部元素集合
+	 * 
+	 * @return
+	 */
+	public <T> List<T> findAll(Class<T> t) {
+		try {
+			return dao.findAll(t);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("出现致命异常,查询失败!");
+		}
+
+	}
+
+	/**
+	 * 通过name查询,并返回指定JavaBean类型的集合
+	 * 
+	 * @param pname
+	 * @param obj
+	 * @return
+	 */
+	public <T> List<T> findByName(String name, Class<T> t) {
+		try {
+			return dao.findByName(name, t);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 通过id查询
+	 * 
+	 * @param id
+	 * @param t
+	 * @return
+	 */
+	public <T> List<T> findById(Integer id, Class<T> t) {
+		try {
+			return dao.findById(id, t);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public <T> List<T> findById(String id, Class<T> t) {
+		try {
+			return dao.findById(Integer.parseInt(id), t);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 向数据库中添加条目
+	 * 
+	 * @param obj
+	 */
+	public <T> void addElement(T obj) {
+		try {
+			dao.addElement(obj);
+			ConnectionManager.commit();
+		} catch (SQLException e) {
+			ConnectionManager.rollback();
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 编辑数据库中的条目
+	 * 
+	 * @param id
+	 * @param d
+	 */
+	public <T> void editElement(Integer id, T t) {
+		try {
+			dao.editElement(id, t);
+			ConnectionManager.commit();
+		} catch (SQLException e) {
+			ConnectionManager.rollback();
+			e.printStackTrace();
+		}
+	}
+
+	public <T> void editElement(String id, T t) {
+		try {
+			dao.editElement(Integer.parseInt(id), t);
+			ConnectionManager.commit();
+		} catch (SQLException e) {
+			ConnectionManager.rollback();
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 根据id从数据库中删除数据
+	 * 
+	 * @param id
+	 */
+	public void deleteElement(String id) {
+		try {
+			dao.deleteElement(id);
+			ConnectionManager.commit();
+		} catch (SQLException e) {
+			ConnectionManager.rollback();
+			e.printStackTrace();
+		}
+	}
+
+	public void deleteElement(Integer id) {
+		try {
+			dao.deleteElement(id.toString());
+			ConnectionManager.commit();
+		} catch (SQLException e) {
+			ConnectionManager.rollback();
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 删除id在数组ids中的所有数据库元素
+	 * 
+	 * @param pids
+	 */
+	public void deleteAllElement(String[] ids) {
+		try {
+			dao.deleteAllElement(ids);
+			ConnectionManager.commit();
+		} catch (SQLException e) {
+			ConnectionManager.rollback();
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 根据参数名与参数值的映射进行模糊查询,返回指定类型JavaBean的集合
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public <T> List<T> contionalSearch(Map<String, String> map, Class<T> t) {
+		try {
+			return dao.contionalSearch(map, t);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 从数据库中查询分页数据
+	 * 
+	 * @param p
+	 * @param t
+	 * @return
+	 */
+	/*public <T> Pages<T> dividedPage(Pages<T> p, Class<T> t) {
+		try {
+			return dao.dividedPage(p, t);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}*/
+
+}
