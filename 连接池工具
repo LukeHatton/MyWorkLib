@@ -1,0 +1,74 @@
+package com.workpro.utils;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+/**
+ * 连接管理器,自动为当前线程获取连接并维护
+ * @author lizhao
+ *
+ */
+public class ConnectionManager {
+	private static ThreadLocal<Connection> local = new ThreadLocal<Connection>();
+
+	/**
+	 * 创建(如果没有)并获得以当前线程为键的Connection对象
+	 * 
+	 * @return {@link Connection} a object of Connection pick up from the pool
+	 *         if there not exist a connection for current thread or the
+	 *         connection value for current thread if the mapping with this
+	 *         thread and its connection is existed
+	 */
+	public static Connection getConnection() {
+		if (local.get() == null) {// 如果线程与连接的映射中没有元素,就从线程池中取出一个连接
+			local.set(C3P0Utils.getConnection());
+			return local.get();
+		} else
+			// System.out.println(local);
+			return local.get();
+	}
+
+	/**
+	 * 关闭事务自动提交
+	 */
+	public static void start() {
+		try {
+			local.get().setAutoCommit(false);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 提交事务
+	 * 
+	 * @throws SQLException
+	 */
+	public static void commit() throws SQLException {
+		local.get().commit();// 提交事务
+	}
+
+	/**
+	 * 更改数据库出现异常时,执行回滚操作
+	 */
+	public static void rollback() {
+		try {
+			local.get().rollback();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 释放资源
+	 */
+	public static void close() {
+		try {
+			local.get().close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		local.remove();
+	}
+}
