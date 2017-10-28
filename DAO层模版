@@ -1,0 +1,207 @@
+package com.workpro.dao;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+
+//import com.workpro.domain.Pages;
+import com.workpro.utils.ConnectionManager;
+import com.workpro.utils.MyBeanUtils;
+
+/**
+ * 通用的数据库层逻辑
+ * 
+ * @author lizhao
+ * @version 1.0.0
+ */
+public class GenericDao {
+	private Connection conn = ConnectionManager.getConnection();
+	private QueryRunner runner = new QueryRunner();
+
+	/**
+	 * 查询表中所有元素的泛型方法
+	 * 
+	 * @param obj
+	 * @return
+	 * @throws SQLException
+	 */
+	public <T> List<T> findAll(Class<T> t) throws SQLException {
+		String sql = "SELECT pid ,pname,price,pdate,pflag,p.cid,category_id FROM product p INNER JOIN category c WHERE p.cid = c.cid ORDER BY p.cid;";
+		// 如果需要查询不同的表,请更改上一行的查询语句
+		return runner.query(conn, sql, new BeanListHandler<T>(t));
+	}
+
+	/**
+	 * 通过name查询表的泛型方法
+	 * 
+	 * @param pname
+	 * @param obj
+	 * @return
+	 * @throws SQLException
+	 */
+	public <T> List<T> findByName(String name, Class<T> t) throws SQLException {
+		String sql = "select * from users where uname = '"+name+"'";
+		// 如果需要查询不同的表,请更改上一行的查询语句
+		return runner.query(conn, sql, new BeanListHandler<T>(t));
+	}
+
+	/**
+	 * 通过id查询表的泛型方法
+	 * 
+	 * @param id
+	 * @param t
+	 * @return
+	 * @throws SQLException
+	 */
+	public <T> List<T> findById(Integer id, Class<T> t) throws SQLException {
+		String sql = "SELECT pid ,pname,price,pdate,pflag,cid FROM product WHERE pid = " + id;
+		// 如果需要查询不同的表,请更改上一行的查询语句
+		return runner.query(conn, sql, new BeanListHandler<T>(t));
+	}
+
+	public <T> List<T> findById(String id, Class<T> t) throws SQLException {
+		String sql = "SELECT pid ,pname,price,pdate,pflag,cid FROM product WHERE pid = " + id;
+		// 如果需要查询不同的表,请更改上一行的查询语句
+		return runner.query(conn, sql, new BeanListHandler<T>(t));
+	}
+
+	/**
+	 * 向表中添加元素的泛型方法
+	 * 
+	 * @param obj
+	 * @throws SQLException
+	 */
+	public <T> void addElement(T t) throws SQLException {
+		Object[] obj = null;
+		try {
+			obj = MyBeanUtils.beanToArray(t);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		String sql = "INSERT INTO product (pname,price,pdate,pflag,cid) VALUES (?,?,?,?,?)";
+		// 如果需要向不同的表中添加数据,请更改上一行的添加语句
+		int aff = runner.update(conn, sql, obj);
+		System.out.println("插入操作影响了" + aff + "行");
+	}
+
+	/**
+	 * 编辑指定id的表中元素
+	 * 
+	 * @param id
+	 * @param t
+	 * @throws SQLException
+	 */
+	public <T> void editElement(Integer id, T t) throws SQLException {
+		Object[] obj = null;
+		try {
+			obj = MyBeanUtils.beanToArray(t);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		String sql = "UPDATE product SET pname=?,price=?,pdate=?,pflag=?,cid=? WHERE pid = " + id;
+		// 如果需要编辑不同的表中的数据,请更改上一行的编辑语句
+		int aff = runner.update(conn, sql, obj);
+		System.out.println("编辑操作影响了" + aff + "行");
+	}
+
+	public <T> void editElement(String id, T t) throws SQLException {
+		Object[] obj = null;
+		try {
+			obj = MyBeanUtils.beanToArray(t);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		String sql = "UPDATE product SET pname=?,price=?,pdate=?,pflag=?,cid=? WHERE pid = " + id;
+		// 如果需要编辑不同的表中的数据,请更改上一行的编辑语句
+		int aff = runner.update(conn, sql, obj);
+		System.out.println("编辑操作影响了" + aff + "行");
+	}
+
+	/**
+	 * 根据id从表中删除数据
+	 * 
+	 * @param id
+	 * @throws SQLException
+	 */
+	public void deleteElement(String id) throws SQLException {
+		String sql = "delete from product where pid = " + id;
+		// 如果需要从不同的表中删除数据,请更改上一行的删除语句
+		int aff = runner.update(conn, sql);
+		System.out.println("删除操作影响了" + aff + "行");
+	}
+
+	public void deleteElement(Integer id) throws SQLException {
+		String sql = "delete from product where pid = " + id;
+		// 如果需要从不同的表中删除数据,请更改上一行的删除语句
+		int aff = runner.update(conn, sql);
+		System.out.println("删除操作影响了" + aff + "行");
+	}
+
+	/**
+	 * 删除id在数组ids中的所有数据库元素
+	 * 
+	 * @param pids
+	 * @throws SQLException
+	 */
+	public void deleteAllElement(String[] ids) throws SQLException {
+		String sql = "delete from product where pid = ?";
+		int aff = 0;
+		for (String id : ids) {
+			aff += runner.update(conn, sql, id);
+		}
+		System.out.println("删除操作影响了" + aff + "行");
+	}
+
+	/**
+	 * 查询表,根据参数名与参数值的映射进行多条件模糊查询(参数名必须与数据表中的列名相同),返回指定JavaBean类型的List集合
+	 * 
+	 * @param params
+	 * @return
+	 * @throws SQLException
+	 */
+	public <T> List<T> contionalSearch(Map<String, String> map, Class<T> t) throws SQLException {
+		String sql = "SELECT pid,pname,price FROM products p WHERE 1=1";
+		// 需要查询不同的表,请更改上面的查询语句
+		if (map == null || map.size() == 0) {
+			return null;
+		}
+		Set<Entry<String, String>> set = map.entrySet();
+		// 拼接查询语句
+		for (Entry<String, String> entry : set) {
+			if (entry.getValue() != null && !entry.getValue().equals("")) {// 如果参数值不为空和空字符串
+				sql += " AND p." + entry.getKey() + " LIKE '%" + entry.getValue() + "%'";
+			}
+		}
+		sql += " ORDER BY p.pid;";
+		// 需要查询不同的表,请更改上面的查询语句
+		return runner.query(conn, sql, new BeanListHandler<T>(t));
+	}
+
+	/**
+	 * 从数据库中查询分页数据,封装成一个包含数据信息(List<JavaBean>)的分页(Pages)对象返回.
+	 * 要求提供Pages(分页)类对象并指定该对象中数据条目JavaBean对象的类型
+	 * 
+	 * @param p
+	 * @param t
+	 * @return
+	 * @throws SQLException
+	 */
+	/*public <T> Pages<T> dividedPage(Pages<T> p, Class<T> t) throws SQLException {
+		int current = p.getCurrentPage();
+		int size = p.getPageSize();
+		String sql = "SELECT pid ,pname,price,pdate,pflag,p.cid,category_id FROM product p INNER JOIN category c WHERE p.cid = c.cid limit "
+				+ (current - 1) + "," + size;
+		// 要查询不同的表,请更改上面的查询语句
+		List<T> list = runner.query(conn, sql, new BeanListHandler<T>(t));
+		p.setProducts(list);
+		p.setTotal(findAll(t).size());
+		return p;
+	}*/
+
+}
