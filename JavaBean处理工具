@@ -1,0 +1,52 @@
+package com.workpro.utils;
+
+import java.lang.reflect.Field;
+
+/**
+ * 我的常用的JavaBean工具
+ * @author lizhao
+ *
+ */
+public class MyBeanUtils {
+
+	/**
+	 * 读取一个JavaBean对象,把它的所有私有域的值存入一个Object数组并返回
+	 * @param t
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	public static <T> Object[] beanToArray(T t) throws IllegalArgumentException, IllegalAccessException{
+		Class<? extends Object> cla = t.getClass();
+		//获取目标对象的类的所有域
+		Field[] field = cla.getDeclaredFields();
+		Object[] obj = new Object[field.length];
+		int i = 0;
+		for(Field f : field){
+			f.setAccessible(true);
+			obj[i++] = f.get(t);//获取该对象的这个域的值
+		}
+		return obj;
+	}
+	
+	/**
+	 * 读取一个JavaBean对象,把它在指定范围内的域按照定义顺序存入一个Object数组并返回
+	 * @param t
+	 * @param from,excluded
+	 * @param to,included
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	public static <T> Object[] beanToArray(T t,int from,int to) throws IllegalArgumentException, IllegalAccessException{
+		Class<? extends Object> cla = t.getClass();
+		//获取目标对象的类的所有域
+		Field[] field = cla.getDeclaredFields();
+		Object[] obj = new Object[to-from];
+		for(int i = from,j = 0;i<to;i++){
+			field[i].setAccessible(true);
+			obj[j++] = field[i];
+		}
+		return obj;
+	}
+}
