@@ -1,0 +1,74 @@
+package com.workpro.utils;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.sql.DataSource;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+/**
+ * 封装的C3P0连接池工具
+ * @author lizhao
+ *
+ */
+public class C3P0Utils {
+	// 从指定文件中读取配置文件来创建连接池,默认文件路径在bin目录下
+	private static DataSource source = new ComboPooledDataSource();
+
+	/**
+	 * 获取连接池对象
+	 * 
+	 * @return DataSource the object of DataSource which was initialized when
+	 *         the C3P0Utils.class was loaded by JVM
+	 */
+	public static DataSource getSource() {
+//		Class a  = C3P0Utils.class;
+		return source;
+	}
+
+	/**
+	 * 从连接池中获取一个Connection对象
+	 * 
+	 * @return {@link Connection} a Connection object if there still exist free
+	 *         connection in the ConnectionPool
+	 */
+	public static Connection getConnection() {
+		try {
+			return source.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("获取连接失败!");
+		}
+	}
+
+	/**
+	 * 当一个Connection对象完成它的功能后,应调用这个方法释放资源
+	 * 
+	 * @param the
+	 *            object you want to close
+	 */
+	public static void closeAll(Statement statement, ResultSet result, Connection connection) {
+		if (statement != null) {
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if (result != null) {
+			try {
+				result.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		if (connection != null) {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
